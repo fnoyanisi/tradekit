@@ -68,9 +68,9 @@ class TradeDB:
             WHERE id = %s AND status = 'OPEN';
             """
             with self.conn.cursor() as cur:
-                cur.execute(update_query, (trade_position.close_date, trade_position.close_price, trade_position.pid))
+                cur.execute(update_query, (trade_position.close_date, trade_position.close_price, trade_position.id))
                 self.conn.commit()
-                print(f"Trade {trade_position.pid} closed successfully.")
+                print(f"Trade {trade_position.id} closed successfully.")
 
     def get_latest_open_position(self, bot_name, ticker):
         """Fetch the latest open trade position for a bot on a specific ticker."""
@@ -87,7 +87,7 @@ class TradeDB:
     
             if row:
                 return TradePosition(
-                    pid=row["id"],
+                    id=row["id"],
                     bot_name=row["bot_name"],
                     ticker=row["ticker"],
                     quantity=row["quantity"],

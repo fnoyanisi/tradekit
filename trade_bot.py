@@ -40,7 +40,7 @@ class TradeBot:
         
         if position_type == "LONG":
             self.position = TradePosition(
-                pid=None,
+                id=None,
                 bot_name=self.name,
                 ticker=self.ticker,
                 quantity=quantity,
@@ -67,7 +67,7 @@ class TradeBot:
                 self.db.close_trade(self.position)
         elif position_type == "SHORT":
             self.position = TradePosition(
-                pid=None,
+                id=None,
                 bot_name=self.name,
                 ticker=self.ticker,
                 quantity=quantity,

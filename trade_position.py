@@ -1,8 +1,8 @@
 from datetime import datetime
 
 class TradePosition:
-    def __init__(self, pid:int, bot_name: str, ticker: str, quantity: float, price: float, action: str):
-        self.pid = None # Primary Key
+    def __init__(self, id:int, bot_name: str, ticker: str, quantity: float, price: float, action: str):
+        self.id = id # Primary Key
         self.bot_name = bot_name
         self.ticker = ticker  # Stock symbol (e.g., AAPL)
         self.quantity = quantity  # Number of shares
@@ -22,7 +22,7 @@ class TradePosition:
     def to_dict(self):
         """Converts the object to a dictionary (useful for database storage)."""
         return {
-            "pid": self.pid,
+            "id": self.id,
             "bot_name": self.bot_name,
             "ticker": self.ticker,
             "quantity": self.quantity,
