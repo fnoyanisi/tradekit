@@ -33,7 +33,7 @@ class TradeBot:
         """Implement the trading strategy."""
         pass
 
-    def buy(self, position_type: str, quantity: Optional[int] = None, price: Optional[float] = None):
+    def buy(self, position_type: str, quantity: int, price: float):
         """Place a buy order. Only position_type is mandatory."""
         quantity = quantity or -1
         price = price or -1.0
@@ -43,15 +43,17 @@ class TradeBot:
                 id=None,
                 bot_name=self.name,
                 ticker=self.ticker,
+                trade_type=position_type,
                 quantity=quantity,
-                price=price,
+                open_order_price=price,
                 action="BUY"
-            )
+                )
             self.position_updated = True
-            self.db.create_trade(self.name, self.ticker, quantity, price, "BUY")
+            print(self.position.to_dict())
+            self.db.open_order(self.position)
         elif position_type == "SHORT":
             if self.position:
-                self.position.close(price)
+                self.position.place_order(price)
                 self.position_updated = True
                 self.db.close_trade(self.position)
 
@@ -62,7 +64,7 @@ class TradeBot:
         
         if position_type == "LONG":
             if self.position:
-                self.position.close(price)
+                self.position.place_order(price)
                 self.position_updated = True
                 self.db.close_trade(self.position)
         elif position_type == "SHORT":
@@ -70,9 +72,10 @@ class TradeBot:
                 id=None,
                 bot_name=self.name,
                 ticker=self.ticker,
+                trade_type=position_type,
                 quantity=quantity,
-                price=price,
+                open_order_price=price,
                 action="SELL"
             )
             self.position_updated = True
-            self.db.create_trade(self.name, self.ticker, quantity, price, "SELL")
+            self.db.open_order(self.position)
