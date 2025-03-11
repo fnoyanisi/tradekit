@@ -87,12 +87,12 @@ class TradeDB:
     
             if row:
                 return TradePosition(
-                    pid=row[0],
-                    bot_name=row[1],
-                    ticker=row[2],
-                    quantity=row[3],
-                    price=row[4],
-                    action=row[5]
+                    pid=row["id"],
+                    bot_name=row["bot_name"],
+                    ticker=row["ticker"],
+                    quantity=row["quantity"],
+                    price=row["price"],
+                    action=row["action"]
                 )
             else:
                 return None
