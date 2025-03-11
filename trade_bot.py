@@ -5,7 +5,7 @@ from .trade_position import TradePosition
 from .trade_db import TradeDB
 
 class TradeBot:
-    def __init__(self, name: str, ticker: str, strategy: Callable[['TradeBot'], None], db: TradeDB):
+    def __init__(self, name: str, ticker: str, db: TradeDB):
         self.name = name
         self.ticker = ticker
         self.data = pd.DataFrame()
@@ -13,7 +13,6 @@ class TradeBot:
         self.db = db
         self.position = None
         self.position_updated = False
-        self.run = lambda: strategy(self)
 
     def load_data(self, data):
         """Load the historic trade data. Must include OHCL and volume information"""
@@ -29,8 +28,19 @@ class TradeBot:
         """Return the current trade position."""
         return self.position if self.position_updated else None
 
-    def run(self):
-        """Implement the trading strategy."""
+    def run(self, strategy: Optional[Callable[['TradeBot'], None]] = None):
+        """
+        Loads the latest position from the database and runs the strategy. 
+        The strategy object is a function that expects exactly one argument of type 
+        TradeBot and returns nothing. 
+        """
+        if strategy:
+            self.strategy = strategy
+            self.load_position()
+            self.strategy(self)
+
+    def strategy(self):
+        """Implement your trading strategy here."""
         pass
 
     def buy(self, position_type: str, quantity: int, price: float):
