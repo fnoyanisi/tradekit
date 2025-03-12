@@ -114,7 +114,7 @@ class TradeDB:
     def get_latest_open_position(self, bot_name, ticker):
         """Fetch the latest open trade position for a bot on a specific ticker."""
         query = """
-        SELECT id, bot_name, ticker, quantity, action, open_order_date, open_order_price, 
+        SELECT id, bot_name, ticker, trade_type, quantity, action, open_order_date, open_order_price, 
             open_date, open_price, close_order_date, close_order_price, close_date, close_price, status
         FROM trades
         WHERE bot_name = %s AND ticker = %s AND status = 'OPEN'
@@ -130,6 +130,7 @@ class TradeDB:
                     id=row["id"],
                     bot_name=row["bot_name"],
                     ticker=row["ticker"],
+                    trade_type=row['trade_type'],
                     quantity=row["quantity"],
                     action=row["action"],
                     open_order_price=row["open_order_price"],
