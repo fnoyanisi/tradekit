@@ -39,10 +39,6 @@ class TradeBot:
             self.load_position()
             self.strategy(self)
 
-    def strategy(self):
-        """Implement your trading strategy here."""
-        pass
-
     def buy(self, position_type: str, quantity: int, price: float):
         """Place a buy order. Only position_type is mandatory."""
         quantity = quantity or -1
