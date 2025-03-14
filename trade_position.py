@@ -88,7 +88,7 @@ class TradePosition:
             "trade_type": self.trade_type,
             "quantity": self.quantity,
             "action": self.action,
-            "open_order_date": self.open_order_date.strftime('%Y-%m-%d %H:%M:%S'),
+            "open_order_date": self.open_order_date.strftime('%Y-%m-%d %H:%M:%S') if self.open_order_date else None,
             "open_order_price": self.open_order_price,
             "open_date": self.open_date.strftime('%Y-%m-%d %H:%M:%S') if self.open_date else None,
             "open_price": self.open_price,

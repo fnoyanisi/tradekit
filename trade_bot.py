@@ -1,6 +1,5 @@
 import pandas as pd
-from typing import Callable
-from typing import Optional
+from typing import Callable, Optional
 from .trade_position import TradePosition
 from .trade_db import TradeDB
 
@@ -40,10 +39,7 @@ class TradeBot:
             self.strategy(self)
 
     def buy(self, position_type: str, quantity: int, price: float):
-        """Place a buy order. Only position_type is mandatory."""
-        quantity = quantity or -1
-        price = price or -1.0
-        
+        """Place a buy order."""
         if position_type == "LONG":
             self.position = TradePosition(
                 id=None,
@@ -53,24 +49,21 @@ class TradeBot:
                 quantity=quantity,
                 open_order_price=price,
                 action="BUY"
-                )
+            )
+            self.position.place_open_order(price)
             self.position_updated = True
-            print(self.position.to_dict())
             self.db.open_order(self.position)
         elif position_type == "SHORT":
             if self.position:
-                self.position.place_order(price)
+                self.position.place_close_order(price)
                 self.position_updated = True
                 self.db.close_trade(self.position)
 
-    def sell(self, position_type: str, quantity: Optional[int] = None, price: Optional[float] = None):
-        """Place a sell order. Only position_type is mandatory."""
-        quantity = quantity or -1
-        price = price or -1.0
-        
+    def sell(self, position_type: str, quantity: int, price: float):
+        """Place a sell order."""
         if position_type == "LONG":
             if self.position:
-                self.position.place_order(price)
+                self.position.place_close_order(price)
                 self.position_updated = True
                 self.db.close_trade(self.position)
         elif position_type == "SHORT":
@@ -83,5 +76,6 @@ class TradeBot:
                 open_order_price=price,
                 action="SELL"
             )
+            self.position.place_open_order(price)
             self.position_updated = True
             self.db.open_order(self.position)
