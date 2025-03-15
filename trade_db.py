@@ -146,6 +146,41 @@ class TradeDB:
             else:
                 return None
 
+    def get_last_position(self, bot_name, ticker):
+        """Fetch the latest open trade position for a bot on a specific ticker."""
+        query = """
+        SELECT id, bot_name, ticker, trade_type, quantity, action, open_order_date, open_order_price, 
+            open_date, open_price, close_order_date, close_order_price, close_date, close_price, status
+        FROM trades
+        WHERE bot_name = %s AND ticker = %s AND status != 'CLOSED'
+        ORDER BY open_date DESC
+        LIMIT 1;
+        """
+        with self.conn.cursor() as cur:
+            cur.execute(query, (bot_name, ticker))
+            row = cur.fetchone()
+            
+            if row:
+                return TradePosition(
+                    id=row["id"],
+                    bot_name=row["bot_name"],
+                    ticker=row["ticker"],
+                    trade_type=row['trade_type'],
+                    quantity=row["quantity"],
+                    action=row["action"],
+                    open_order_price=row["open_order_price"],
+                    open_order_date=row["open_order_date"],
+                    open_date=row["open_date"],
+                    open_price=row["open_price"],
+                    close_order_date=row["close_order_date"],
+                    close_order_price=row["close_order_price"],
+                    close_date=row["close_date"],
+                    close_price=row["close_price"],
+                    status=row["status"]
+                )
+            else:
+                return None
+
     def get_all_trades(self):
         """Retrieve all trades from the database."""
         with self.conn.cursor() as cur:
