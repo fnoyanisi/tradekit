@@ -12,6 +12,7 @@ class TradeBot:
         self.db = db
         self.position = None
         self.position_updated = False
+        self.cash = 0.0
 
     def load_data(self, data):
         """Load the historic trade data. Must include OHCL and volume information"""
@@ -30,7 +31,7 @@ class TradeBot:
     
     def load_position(self):
         """Load the latest open position from the database"""
-        self.position = self.db.get_latest_open_position(self.name, self.ticker)
+        self.position = self.db.get_last_position(self.name, self.ticker)
         if self.position:
             self.position_updated = True
 
