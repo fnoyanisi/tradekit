@@ -15,7 +15,18 @@ class TradeBot:
 
     def load_data(self, data):
         """Load the historic trade data. Must include OHCL and volume information"""
-        self.data = data.copy()
+        if not isinstance(data, pd.DataFrame):
+            raise ValueError("Data must be a Pandas DataFrame")
+        
+        required_columns = {'datetime', 'open', 'high', 'low', 'close', 'volume'}
+        if not required_columns.issubset(data.columns):
+            raise ValueError(f"Data must contain the following columns: {required_columns}")
+        
+        data = data.copy()
+        data['datetime'] = pd.to_datetime(data['datetime'])
+        data.set_index('datetime', inplace=True)
+        
+        self.data = data
     
     def load_position(self):
         """Load the latest open position from the database"""
