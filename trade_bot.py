@@ -14,6 +14,28 @@ class TradeBot:
         self.position_updated = False
         self.cash = 0.0
 
+        # determines the % of cash that can be spent 
+        # on a single trade. Default is "moderate"
+        self.aggressiveness_levels = {
+            "max": 1.0,         # 100%
+            "moderate": 0.6,    # 60%
+            "conservative": 0.4 # 40%
+        }
+        self.aggressiveness = "moderate"
+
+    def set_aggressiveness(self, level: str):
+        if level in self.aggressiveness_levels:
+            self.aggressiveness = level
+        else:
+            raise ValueError(f"Invalid aggressiveness level: {level}")
+    
+    def set_aggressiveness_ratios(self, max_ratio: float, moderate_ratio: float, conservative_ratio: float):
+        self.aggressiveness_levels = {
+            "max": max_ratio,
+            "moderate": moderate_ratio,
+            "conservative": conservative_ratio
+        }
+
     def load_data(self, data):
         """Load the historic trade data. Must include OHCL and volume information"""
         if not isinstance(data, pd.DataFrame):
@@ -50,26 +72,38 @@ class TradeBot:
             self.load_position()
             self.strategy(self)
 
+    def calculate_quantity(self, price: float) -> int:
+        """Determine how many shares to buy based on available cash and aggressiveness level."""
+        ratio = self.aggressiveness_levels[self.aggressiveness]
+        budget = self.cash * ratio
+        budget_after_commission = budget * (1 - self.commission)
+        quantity = int(budget_after_commission / price)
+        return max(quantity, 0)
+
     def buy(self, position_type: str, quantity: int, price: float):
         """Place a buy order."""
-        if position_type == "LONG":
-            self.position = TradePosition(
-                id=None,
-                bot_name=self.name,
-                ticker=self.ticker,
-                trade_type=position_type,
-                quantity=quantity,
-                open_order_price=price,
-                action="BUY"
-            )
-            self.position.place_open_order(price)
-            self.position_updated = True
-            self.db.open_order(self.position)
-        elif position_type == "SHORT":
-            if self.position:
-                self.position.place_close_order(price)
+        quantity = self.calculate_quantity(price)
+        if quantity > 0:
+            if position_type == "LONG":
+                self.position = TradePosition(
+                    id=None,
+                    bot_name=self.name,
+                    ticker=self.ticker,
+                    trade_type=position_type,
+                    quantity=quantity,
+                    open_order_price=price,
+                    action="BUY"
+                )
+                self.position.place_open_order(price)
                 self.position_updated = True
-                self.db.close_trade(self.position)
+                self.db.open_order(self.position)
+            elif position_type == "SHORT":
+                if self.position:
+                    self.position.place_close_order(price)
+                    self.position_updated = True
+                    self.db.close_trade(self.position)
+        else:
+            print("Not enough cash to place a trade: " + str(self.cash))
 
     def sell(self, position_type: str, quantity: int, price: float):
         """Place a sell order."""
