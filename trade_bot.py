@@ -2,12 +2,14 @@ import pandas as pd
 from typing import Callable, Optional
 from .trade_position import TradePosition
 from .trade_db import TradeDB
+from .trade_broker import TradeBroker
 
 class TradeBot:
-    def __init__(self, name: str, ticker: str, db: TradeDB):
+    def __init__(self, name: str, ticker: str, db: TradeDB, broker: TradeBroker):
         self.name = name
         self.ticker = ticker
         self.data = pd.DataFrame()
+        self.broker = broker
         self.commission = 0
         self.db = db
         self.position = None
@@ -37,19 +39,22 @@ class TradeBot:
         }
 
     def load_data(self, data):
-        """Load the historic trade data. Must include OHCL and volume information"""
+        """Load the historic trade data. Must include OHLC and volume information."""
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Data must be a Pandas DataFrame")
-        
-        required_columns = {'datetime', 'open', 'high', 'low', 'close', 'volume'}
+
+        required_columns = {'open', 'high', 'low', 'close', 'volume'}
         if not required_columns.issubset(data.columns):
             raise ValueError(f"Data must contain the following columns: {required_columns}")
-        
-        data = data.copy()
-        data['datetime'] = pd.to_datetime(data['datetime'])
-        data.set_index('datetime', inplace=True)
-        
-        self.data = data
+
+        if not isinstance(data.index, pd.DatetimeIndex):
+            try:
+                data.index = pd.to_datetime(data.index)
+            except Exception as e:
+                raise ValueError("Index must be a datetime format.") from e
+
+        self.data = data.copy()
+
     
     def load_position(self):
         """Load the latest open position from the database"""
@@ -80,13 +85,12 @@ class TradeBot:
         quantity = int(budget_after_commission / price)
         return max(quantity, 0)
 
-    def buy(self, position_type: str, quantity: int, price: float):
+    def place_buy_order(self, position_type: str, price: float):
         """Place a buy order."""
         quantity = self.calculate_quantity(price)
         if quantity > 0:
             if position_type == "LONG":
                 self.position = TradePosition(
-                    id=None,
                     bot_name=self.name,
                     ticker=self.ticker,
                     trade_type=position_type,
@@ -105,7 +109,7 @@ class TradeBot:
         else:
             print("Not enough cash to place a trade: " + str(self.cash))
 
-    def sell(self, position_type: str, quantity: int, price: float):
+    def place_sell_order(self, position_type: str, quantity: int, price: float):
         """Place a sell order."""
         if position_type == "LONG":
             if self.position:
@@ -114,7 +118,6 @@ class TradeBot:
                 self.db.close_trade(self.position)
         elif position_type == "SHORT":
             self.position = TradePosition(
-                id=None,
                 bot_name=self.name,
                 ticker=self.ticker,
                 trade_type=position_type,
@@ -125,3 +128,8 @@ class TradeBot:
             self.position.place_open_order(price)
             self.position_updated = True
             self.db.open_order(self.position)
+
+    def execute_order(self):
+        """Execute the current order using the broker."""
+        if self.position:
+            self.broker.execute_order(self.position)
