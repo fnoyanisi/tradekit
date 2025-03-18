@@ -4,7 +4,6 @@ from typing import Optional
 class TradePosition:
     def __init__(
         self, 
-        id: Optional[int], 
         bot_name: str, 
         ticker: str, 
         trade_type: str,  # 'LONG' or 'SHORT'
@@ -19,7 +18,8 @@ class TradePosition:
         close_order_date: Optional[datetime] = None, 
         close_order_price: Optional[float] = None, 
         close_date: Optional[datetime] = None, 
-        close_price: Optional[float] = None
+        close_price: Optional[float] = None,
+        id: Optional[int] = None, 
     ):
         self.id = id  # Primary Key, can be None for new trades before DB assignment
         self.bot_name = bot_name
