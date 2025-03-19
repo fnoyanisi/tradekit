@@ -5,7 +5,7 @@ from .database import TradeKitDB
 from .broker import TradeKitBroker
 
 class TradeKitBot:
-    def __init__(self, name: str, ticker: str, db: TradeDB, broker: TradeBroker):
+    def __init__(self, name: str, ticker: str, db: TradeKitDB, broker: TradeKitBroker):
         self.name = name
         self.ticker = ticker
         self.data = pd.DataFrame()

@@ -4,10 +4,10 @@ from .models import TradeKitPosition
 from .database import TradeKitDB
 
 class TradeKitBroker:
-    def __init__(self, db: TradeDB):
+    def __init__(self, db: TradeKitDB):
         self.db = db
 
-    def execute_order(self, position: TradePosition, price: float):
+    def execute_order(self, position: TradeKitPosition, price: float):
         """Execute the given order and update its status."""
         if position.status == "PENDING":
             if position.action == "BUY":
@@ -21,7 +21,7 @@ class TradeKitBroker:
         else:
             print(f"Order for {position.ticker} is not in PENDING status")
 
-    def cancel_order(self, position: TradePosition):
+    def cancel_order(self, position: TradeKitPosition):
         """Cancel the given order."""
         if position.status == "PENDING":
             position.cancel_order()
@@ -30,7 +30,7 @@ class TradeKitBroker:
         else:
             print(f"Order for {position.ticker} is not in PENDING status")
 
-    def fail_order(self, position: TradePosition):
+    def fail_order(self, position: TradeKitPosition):
         """Mark the given order as failed."""
         if position.status == "PENDING":
             position.fail_order()

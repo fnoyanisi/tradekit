@@ -55,7 +55,7 @@ class TradeKitDB:
             cur.execute(create_table_query)
             self.conn.commit()
 
-    def open_order(self, trade_position : TradePosition):        
+    def open_order(self, trade_position : TradeKitPosition):        
         """Insert a new open trade order into the database."""
         insert_query = """
         INSERT INTO trades (bot_name, ticker, trade_type, quantity, open_order_price, action, open_order_date, status)
@@ -76,7 +76,7 @@ class TradeKitDB:
             self.conn.commit()
         return trade_id
 
-    def close_order(self, trade_position: TradePosition, close_order_price, close_order_date):
+    def close_order(self, trade_position: TradeKitPosition, close_order_price, close_order_date):
         """Insert a new close trade order into the database."""
         update_query = """
         UPDATE trades
@@ -88,7 +88,7 @@ class TradeKitDB:
             self.conn.commit()
             print(f"Close order placed for trade {trade_position.id} successfully.")
 
-    def execute_open_trade(self, trade_position: TradePosition, open_price, open_date):
+    def execute_open_trade(self, trade_position: TradeKitPosition, open_price, open_date):
         """Update the trade with actual execution price and date for the open order."""
         update_query = """
         UPDATE trades
@@ -100,7 +100,7 @@ class TradeKitDB:
             self.conn.commit()
             print(f"Open trade executed for {trade_position.id}.")
 
-    def execute_close_trade(self, trade_position: TradePosition, close_price, close_date):
+    def execute_close_trade(self, trade_position: TradeKitPosition, close_price, close_date):
         """Update the trade with actual execution price and date for the close order."""
         update_query = """
         UPDATE trades
@@ -162,7 +162,7 @@ class TradeKitDB:
             row = cur.fetchone()
             
             if row:
-                return TradePosition(
+                return TradeKitPosition(
                     id=row["id"],
                     bot_name=row["bot_name"],
                     ticker=row["ticker"],
