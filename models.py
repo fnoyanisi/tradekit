@@ -6,6 +6,7 @@ class TradeKitPosition:
         self, 
         bot_name: str, 
         ticker: str, 
+        observed_date: Optional[datetime], 
         trade_type: str,  # 'LONG' or 'SHORT'
         quantity: int, 
         action: str,  # 'BUY' or 'SELL'
@@ -27,6 +28,7 @@ class TradeKitPosition:
         self.trade_type = trade_type  # 'LONG' or 'SHORT'
         self.quantity = quantity
         self.action = action  # 'BUY' or 'SELL'
+        self.observed_date = observed_date or datetime.now()
         
         # Order details
         self.open_order_price = open_order_price
@@ -46,45 +48,13 @@ class TradeKitPosition:
         self.order_type = order_type  # 'LIMIT' or 'MARKET'
         self.status = status  # 'PENDING', 'OPEN', 'PARTIAL', 'CLOSED', 'CANCELED', 'FAILED'
 
-    def place_open_order(self, price: float, order_type: str = "MARKET"):
-        """Places an open order and updates order details."""
-        self.open_order_price = price
-        self.open_order_date = datetime.now()
-        self.order_type = order_type
-        self.status = "PENDING"
-
-    def execute_open_order(self, price: float):
-        """Executes the open order and updates open trade details."""
-        self.open_price = price
-        self.open_date = datetime.now()
-        self.status = "OPEN"
-
-    def place_close_order(self, price: float):
-        """Places a close order and updates close order details."""
-        self.close_order_price = price
-        self.close_order_date = datetime.now()
-        self.status = "PARTIAL" if self.status == "OPEN" else "PENDING"
-
-    def execute_close_order(self, price: float):
-        """Executes the close order and marks trade as closed."""
-        self.close_price = price
-        self.close_date = datetime.now()
-        self.status = "CLOSED"
-
-    def cancel_order(self):
-        """Cancels an order before execution."""
-        self.status = "CANCELED"
-
-    def fail_order(self):
-        """Marks an order as failed."""
-        self.status = "FAILED"
-
     def to_dict(self):
         """Converts trade details into a dictionary for database storage."""
         return {
             "id": self.id,
             "bot_name": self.bot_name,
             "ticker": self.ticker,
+            "observed_date": self.observed_date.strftime('%Y-%m-%d %H:%M:%S') if self.observed_date else None,
             "trade_type": self.trade_type,
             "quantity": self.quantity,
             "action": self.action,
@@ -101,4 +71,4 @@ class TradeKitPosition:
         }
 
     def __repr__(self):
-        return f"TradePosition({self.bot_name}, {self.ticker}, {self.trade_type}, {self.action}, {self.quantity}, Status: {self.status})"
+        return f"TradePosition({self.bot_name}, {self.ticker}, {self.observed_date}, {self.trade_type}, {self.action}, {self.quantity}, Status: {self.status})"
