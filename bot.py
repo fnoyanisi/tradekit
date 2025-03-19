@@ -1,10 +1,10 @@
 import pandas as pd
 from typing import Callable, Optional
-from .trade_position import TradePosition
-from .trade_db import TradeDB
-from .trade_broker import TradeBroker
+from .models import TradeKitPosition
+from .database import TradeKitDB
+from .broker import TradeKitBroker
 
-class TradeBot:
+class TradeKitBot:
     def __init__(self, name: str, ticker: str, db: TradeDB, broker: TradeBroker):
         self.name = name
         self.ticker = ticker

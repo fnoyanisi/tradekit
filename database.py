@@ -1,8 +1,8 @@
 import psycopg
 from psycopg.rows import dict_row
-from .trade_position import TradePosition
+from .models import TradeKitPosition
 
-class TradeDB:
+class TradeKitDB:
     def __init__(self, db_name, user, password, host="localhost", port=5432):
         self.db_name = db_name
         self.user = user

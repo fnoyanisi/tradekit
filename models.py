@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-class TradePosition:
+class TradeKitPosition:
     def __init__(
         self, 
         bot_name: str, 

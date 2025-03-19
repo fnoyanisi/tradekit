@@ -1,6 +1,6 @@
-from .trade_bot import TradeBot
-from .trade_db import TradeDB
-from .trade_position import TradePosition
-from .trade_broker import TradeBroker
+from .bot import TradeKitBot
+from .database import TradeKitDB
+from .models import TradeKitPosition
+from .broker import TradeKitBroker
 
-__all__ = ["TradeBot", "TradeDB", "TradePosition", "TradeBroker"]
+__all__ = ["TradeKitBot", "TradeKitDB", "TradeKitPosition", "TradeKitBroker"]

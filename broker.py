@@ -1,9 +1,9 @@
 import pandas as pd
 from typing import Optional
-from .trade_position import TradePosition
-from .trade_db import TradeDB
+from .models import TradeKitPosition
+from .database import TradeKitDB
 
-class TradeBroker:
+class TradeKitBroker:
     def __init__(self, db: TradeDB):
         self.db = db
 
