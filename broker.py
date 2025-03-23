@@ -43,7 +43,7 @@ class TradeKitBroker:
                     self.position.exit_price = self.position.exit_submit_price
                 self.db.update_position(self.position)
                 p = self.position.exit_submit_price or self.position.entry_submit_price
-                print(f"Executed BUY order for {self.position.ticker} at {p}")
+                print(f"{self.__class__.__name__} : Executed BUY order for {self.position.ticker} at {p}")
             elif self.position.action == "SELL":
                 if self.position.position_type == "LONG":
                     self.position.status = "CLOSED"
@@ -55,6 +55,6 @@ class TradeKitBroker:
                     self.position.entry_price = self.position.entry_submit_price
                 self.db.update_position(self.position)
                 p = self.position.entry_submit_price or self.position.exit_submit_price
-                print(f"Executed SELL order for {self.position.ticker} at {p}")
+                print(f"{self.__class__.__name__} : Executed SELL order for {self.position.ticker} at {p}")
         else:
             print(f"Order for position id: {self.position.id} is not in PENDING status")
