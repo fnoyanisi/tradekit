@@ -24,9 +24,9 @@ class TradeKitDB:
                 port=self.port,
                 row_factory=dict_row  # Fetch results as dictionaries
             )
-            print("Connected to the database successfully.")
+            print("{self.__class__.__name__} : Connected to the database successfully.")
         except psycopg.Error as e:
-            print(f"Error connecting to database: {e}")
+            print(f"{self.__class__.__name__} : Error connecting to database: {e}")
 
     def create_table(self):
         """Create a trades table if it doesn't exist."""
@@ -87,9 +87,9 @@ class TradeKitDB:
             cursor = self.conn.cursor()
             cursor.execute(sql_query, values)
             self.conn.commit()
-            print(f"Trade position {trade_position.id} updated successfully.")
+            print(f"{self.__class__.__name__} : Trade position {trade_position.id} updated successfully.")
         except Exception as e:
-            print(f"Error updating trade position {trade_position.id}: {e}")
+            print(f"{self.__class__.__name__} : Error updating trade position {trade_position.id}: {e}")
 
     def create_position(self, trade_position: TradeKitPosition):        
         """Insert a new open trade position into the database."""
@@ -120,7 +120,7 @@ class TradeKitDB:
         
         except Exception as e:
             self.conn.rollback()  # Ensure rollback on failure
-            print(f"Error creating trade position: {e}")
+            print(f"{self.__class__.__name__} : Error creating trade position: {e}")
             return None
 
     def get_latest_open_position(self, bot_name, ticker):
@@ -197,4 +197,4 @@ class TradeKitDB:
         """Close database connection."""
         if self.conn:
             self.conn.close()
-            print("Database connection closed.")
+            print("{self.__class__.__name__} : Database connection closed.")
