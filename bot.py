@@ -14,7 +14,6 @@ class TradeKitBot:
         self.db = db
         self.position = None
         self.cash = 0.0
-        self.position_size = 0
 
         # determines the % of cash that can be spent 
         # on a single trade. Default is "moderate"
@@ -82,7 +81,10 @@ class TradeKitBot:
 
         self.data = data.copy()
 
-    
+    def get_last_observed_exit_date(self):
+        """Return the last observed exit date"""
+        return self.db.get_last_observed_exit_date()
+
     def load_position(self):
         """Load the latest open position from the database"""
         self.position = self.db.get_last_position(self.name, self.ticker)
@@ -113,7 +115,7 @@ class TradeKitBot:
     def calculate_sell_quantity(self) -> int:
         """Determine how many shares to sell based on position size and sell aggressiveness level."""
         ratio = self.sell_aggressiveness_levels[self.sell_aggressiveness]
-        quantity = int(self.position_size * ratio)
+        quantity = int(self.position.position_size * ratio)
         return max(quantity, 0)
 
     def buy(self, position_type: str, price: float, observed_date: Optional[str] = None):
@@ -121,18 +123,24 @@ class TradeKitBot:
         quantity = self.calculate_buy_quantity(price)
         if quantity > 0:
             if not self.position:
+                # open a new position
                 self.position = TradeKitPosition(
                     bot_name=self.name,
                     ticker=self.ticker,
                     position_type=position_type,
-                    quantity=quantity,
-                    observed_date=observed_date,
+                    position_size=quantity,
+                    observed_entry_date=observed_date,
                     entry_submit_price=price,
                     action="BUY"
                 )
+            else:
+                # existing position
+                self.position.action = "BUY"
+                self.position.observed_exit_date = observed_date
             # the order hasn't been executed yet
-            self.submit_order(position_type=position_type, price=price)
-            return quantity
+            q = self.submit_order(position_type=position_type, price=price)
+            self.position.position_size += q
+            return q
         else:
             print("Not enough cash to place a trade: " + str(self.cash))
             return -1
@@ -142,23 +150,29 @@ class TradeKitBot:
         quantity = self.calculate_sell_quantity()
         if quantity > 0:
             if not self.position:
+                # open a new position
                 self.position = TradeKitPosition(
                     bot_name=self.name,
                     ticker=self.ticker,
                     position_type=position_type,
-                    quantity=quantity,
-                    observed_date=observed_date,
+                    position_size=quantity,
+                    observed_entry_date=observed_date,
                     entry_submit_price=price,
                     action="SELL"
                 )
+            else:
+                # existing position
+                self.position.action = "SELL"
+                self.position.observed_exit_date = observed_date
             # The order hasn't been executed yet
-            self.submit_order(position_type=position_type, price=price)
-            return quantity
+            q = self.submit_order(position_type=position_type, price=price)
+            self.position.position_size -= q
+            return q
         else:
-            print("Not enough shares to sell: " + str(self.position_size))
+            print("Not enough shares to sell: " + str(self.position.position_size))
             return -1
 
-    def submit_order(self, position_type: str, price: float):
+    def submit_order(self, position_type: str, price: float)->int:
         #Based on the position and order types, either update the database or create a new entry
         action = self.position.action
         position_type = self.position.position_type
@@ -166,12 +180,14 @@ class TradeKitBot:
         if action == "BUY" and position_type == "LONG":
             self.position.id = self.db.create_position(self.position)
         elif action == "BUY" and position_type == "SHORT":
+            self.position.exit_submit_price = price
             self.db.update_position(self.position)
         elif action == "SELL" and position_type == "LONG":
-            self.position.id = self.db.create_position(self.position)
-        elif action == "SELL" and position_type == "SHORT":
+            self.position.exit_submit_price = price
             self.db.update_position(self.position)
+        elif action == "SELL" and position_type == "SHORT":
+            self.position.id = self.db.create_position(self.position)
 
         # execute the order
-        self.broker.execute_order(trade_position=self.position)    
+        return self.broker.execute_order(trade_position=self.position)    
 
