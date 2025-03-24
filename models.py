@@ -7,7 +7,7 @@ class TradeKitPosition:
         bot_name: str, 
         ticker: str, 
         position_type: str,  # 'LONG' or 'SHORT'
-        quantity: int, 
+        position_size: int, 
         action: str,  # 'BUY' or 'SELL'
         entry_submit_price: float, 
         order_type: str = "MARKET",  # 'LIMIT' or 'MARKET'
@@ -20,15 +20,17 @@ class TradeKitPosition:
         exit_date: Optional[datetime] = None, 
         exit_price: Optional[float] = None,
         id: Optional[int] = None, 
-        observed_date: Optional[datetime] = None
+        observed_entry_date: Optional[datetime] = None,
+        observed_exit_date: Optional[datetime] = None
     ):
         self.id = id  # Primary Key, can be None for new trades before DB assignment
         self.bot_name = bot_name
         self.ticker = ticker
         self.position_type = position_type  # 'LONG' or 'SHORT'
-        self.quantity = quantity
+        self.position_size = position_size
         self.action = action  # 'BUY' or 'SELL'
-        self.observed_date = observed_date or datetime.now()
+        self.observed_entry_date = observed_entry_date or datetime.now()
+        self.observed_exit_date = observed_exit_date or None
         
         # Order details
         self.entry_submit_price = entry_submit_price
@@ -54,9 +56,10 @@ class TradeKitPosition:
             "id": self.id,
             "bot_name": self.bot_name,
             "ticker": self.ticker,
-            "observed_date": self.observed_date.strftime('%Y-%m-%d %H:%M:%S') if self.observed_date else None,
+            "observed_entry_date": self.observed_date.strftime('%Y-%m-%d %H:%M:%S') if self.observed_entry_date else None,
+            "observed_exit_date": self.observed_date.strftime('%Y-%m-%d %H:%M:%S') if self.observed_exit_date else None,
             "position_type": self.position_type,
-            "quantity": self.quantity,
+            "position_size": self.position_size,
             "action": self.action,
             "entry_submit_date": self.entry_submit_date.strftime('%Y-%m-%d %H:%M:%S') if self.entry_submit_date else None,
             "entry_submit_price": self.entry_submit_price,
@@ -71,4 +74,4 @@ class TradeKitPosition:
         }
 
     def __repr__(self):
-        return f"TradeKitPosition({self.bot_name}, {self.ticker}, {self.observed_date}, {self.position_type}, {self.action}, {self.quantity}, Status: {self.status})"
+        return f"TradeKitPosition({self.bot_name}, {self.ticker}, {self.observed_entry_date}, {self.observed_entry_date}, {self.position_type}, {self.action}, {self.position_size}, Status: {self.status})"
