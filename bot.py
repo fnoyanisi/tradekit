@@ -93,6 +93,9 @@ class TradeKitBot:
         """Return the current trade position."""
         return self.position
 
+    def get_latest_open_position(self):
+        return self.db.get_latest_open_position(self.name, self.ticker)
+
     def run(self, strategy: Optional[Callable[['TradeKitBot'], None]] = None):
         """
         Loads the latest position from the database and runs the strategy. 
