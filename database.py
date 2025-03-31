@@ -166,14 +166,14 @@ class TradeKitDB:
 
 
     def get_last_position(self, bot_name, ticker):
-        """Fetch the latest trade position for a bot on a specific ticker, excluding CLOSED status."""
+        """Fetch the latest trade position for a bot on a specific ticker"""
         query = """
         SELECT id, bot_name, ticker, observed_entry_date, observed_exit_date, position_type, position_size, action, 
             entry_submit_date, entry_submit_price, entry_date, entry_price, 
             exit_submit_date, exit_submit_price, exit_date, exit_price, 
             order_type, status
         FROM trades
-        WHERE bot_name = %s AND ticker = %s AND status != 'CLOSED'
+        WHERE bot_name = %s AND ticker = %s
         ORDER BY entry_date DESC
         LIMIT 1;
         """
