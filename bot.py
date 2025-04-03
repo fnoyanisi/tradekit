@@ -125,7 +125,7 @@ class TradeKitBot:
         """Place a buy order."""
         quantity = self.calculate_buy_quantity(price)
         if quantity > 0:
-            if not self.position:
+            if self.position.status == "CLOSED":
                 # open a new position
                 self.position = TradeKitPosition(
                     bot_name=self.name,
@@ -152,7 +152,7 @@ class TradeKitBot:
         """Place a sell order."""
         quantity = self.calculate_sell_quantity()
         if quantity > 0:
-            if not self.position:
+            if self.position.status == "CLOSED":
                 # open a new position
                 self.position = TradeKitPosition(
                     bot_name=self.name,

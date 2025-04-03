@@ -174,7 +174,7 @@ class TradeKitDB:
             order_type, status
         FROM trades
         WHERE bot_name = %s AND ticker = %s
-        ORDER BY entry_date DESC
+        ORDER BY id DESC
         LIMIT 1;
         """
         with self.conn.cursor() as cur:
