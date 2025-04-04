@@ -193,7 +193,7 @@ class TradeKitDB:
                     bot_name=row["bot_name"],
                     ticker=row["ticker"],
                     stop_loss=row["stop_loss"],
-                    take_profit=["take_profit"],
+                    take_profit=row["take_profit"],
                     observed_entry_date=row["observed_entry_date"],
                     observed_exit_date=row["observed_exit_date"],
                     position_type=row["position_type"],
