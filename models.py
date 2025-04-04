@@ -19,6 +19,8 @@ class TradeKitPosition:
         exit_submit_price: Optional[float] = None, 
         exit_date: Optional[datetime] = None, 
         exit_price: Optional[float] = None,
+        stop_loss: Optional[float] = None,
+        take_profit: Optional[float] = None,
         id: Optional[int] = None, 
         observed_entry_date: Optional[datetime] = None,
         observed_exit_date: Optional[datetime] = None
@@ -31,22 +33,26 @@ class TradeKitPosition:
         self.action = action  # 'BUY' or 'SELL'
         self.observed_entry_date = observed_entry_date or datetime.now()
         self.observed_exit_date = observed_exit_date or None
-        
-        # Order details
+
+        # risk management
+        self.stop_loss = stop_loss  # Optional stop loss price
+        self.take_profit = take_profit  # Optional take profit price
+
+        # order details
         self.entry_submit_price = entry_submit_price
         self.entry_submit_date = entry_submit_date or datetime.now()
         
-        # Trade execution details
+        # trade execution details
         self.entry_date = entry_date
         self.entry_price = entry_price
         
-        # Close details
+        # close details
         self.exit_submit_date = exit_submit_date
         self.exit_submit_price = exit_submit_price
         self.exit_date = exit_date
         self.exit_price = exit_price
 
-        # Order type & status
+        # order type & status
         self.order_type = order_type  # 'LIMIT' or 'MARKET'
         self.status = status  # 'PENDING', 'OPEN', 'PARTIAL', 'CLOSED', 'CANCELED', 'FAILED'
 
@@ -61,6 +67,8 @@ class TradeKitPosition:
             "position_type": self.position_type,
             "position_size": self.position_size,
             "action": self.action,
+            "stop_loss": self.stop_loss,
+            "take_profit": self.take_profit,
             "entry_submit_date": self.entry_submit_date.strftime('%Y-%m-%d %H:%M:%S') if self.entry_submit_date else None,
             "entry_submit_price": self.entry_submit_price,
             "entry_date": self.entry_date.strftime('%Y-%m-%d %H:%M:%S') if self.entry_date else None,
@@ -74,4 +82,10 @@ class TradeKitPosition:
         }
 
     def __repr__(self):
-        return f"TradeKitPosition({self.bot_name}, {self.ticker}, {self.observed_entry_date}, {self.observed_entry_date}, {self.position_type}, {self.action}, {self.position_size}, Status: {self.status})"
+        return f"TradeKitPosition(id: {self.id}, \
+                                    name: {self.bot_name}, \
+                                    ticker: {self.ticker}, \
+                                    type: {self.position_type}, \
+                                    action:{self.action},\
+                                    Status: {self.status} \
+        )"

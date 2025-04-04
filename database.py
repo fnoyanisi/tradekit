@@ -35,6 +35,8 @@ class TradeKitDB:
             id SERIAL PRIMARY KEY,
             bot_name VARCHAR(50) NOT NULL,
             ticker VARCHAR(10) NOT NULL,
+            stop_loss NUMERIC(10,2) NULL,
+            take_profit NUMERIC(10,2) NULL,
             observed_entry_date TIMESTAMP NULL,
             observed_exit_date TIMESTAMP NULL,
             position_type VARCHAR(5) CHECK (position_type IN ('LONG', 'SHORT')) NOT NULL DEFAULT 'LONG',
@@ -96,14 +98,16 @@ class TradeKitDB:
         """Insert a new open trade position into the database."""
         
         insert_query = """
-        INSERT INTO trades (bot_name, ticker, position_type, position_size, entry_submit_price, action, entry_submit_date, status)
-        VALUES (%(bot_name)s, %(ticker)s, %(position_type)s, %(position_size)s, %(entry_submit_price)s, %(action)s, %(entry_submit_date)s, %(status)s)
+        INSERT INTO trades (bot_name, ticker, stop_loss, take_profit, position_type, position_size, entry_submit_price, action, entry_submit_date, status)
+        VALUES (%(bot_name)s, %(ticker)s, %(stop_loss)s, %(take_profit)s, %(position_type)s, %(position_size)s, %(entry_submit_price)s, %(action)s, %(entry_submit_date)s, %(status)s)
         RETURNING id;
         """
 
         params = {
             "bot_name": trade_position.bot_name,
             "ticker": trade_position.ticker,
+            "stop_loss": trade_position.stop_loss,
+            "take_profit": trade_position.take_profit,
             "position_type": trade_position.position_type,
             "position_size": trade_position.position_size,
             "entry_submit_price": trade_position.entry_submit_price,
@@ -127,8 +131,8 @@ class TradeKitDB:
     def get_latest_open_position(self, bot_name, ticker):
         """Fetch the latest open trade position for a bot on a specific ticker."""
         query = """
-        SELECT id, bot_name, ticker, observed_entry_date, observed_exit_date, position_type, position_size, action, 
-            entry_submit_date, entry_submit_price, entry_date, entry_price, 
+        SELECT id, bot_name, ticker, stop_loss, take_profit, observed_entry_date, observed_exit_date, position_type,  
+            position_size, action, entry_submit_date, entry_submit_price, entry_date, entry_price, 
             exit_submit_date, exit_submit_price, exit_date, exit_price, 
             order_type, status
         FROM trades
@@ -145,6 +149,8 @@ class TradeKitDB:
                     id=row["id"],
                     bot_name=row["bot_name"],
                     ticker=row["ticker"],
+                    stop_loss=row["stop_loss"],
+                    take_profit=row["take_profit"],
                     observed_entry_date=row["observed_entry_date"],
                     observed_exit_date=row["observed_exit_date"],
                     position_type=row["position_type"],
@@ -168,8 +174,8 @@ class TradeKitDB:
     def get_last_position(self, bot_name, ticker):
         """Fetch the latest trade position for a bot on a specific ticker"""
         query = """
-        SELECT id, bot_name, ticker, observed_entry_date, observed_exit_date, position_type, position_size, action, 
-            entry_submit_date, entry_submit_price, entry_date, entry_price, 
+        SELECT id, bot_name, ticker, stop_loss, take_profit, observed_entry_date, observed_exit_date, position_type, 
+            position_size, action, entry_submit_date, entry_submit_price, entry_date, entry_price, 
             exit_submit_date, exit_submit_price, exit_date, exit_price, 
             order_type, status
         FROM trades
@@ -186,6 +192,8 @@ class TradeKitDB:
                     id=row["id"],
                     bot_name=row["bot_name"],
                     ticker=row["ticker"],
+                    stop_loss=row["stop_loss"],
+                    take_profit=["take_profit"],
                     observed_entry_date=row["observed_entry_date"],
                     observed_exit_date=row["observed_exit_date"],
                     position_type=row["position_type"],

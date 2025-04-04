@@ -121,7 +121,7 @@ class TradeKitBot:
         quantity = int(self.position.position_size * ratio)
         return max(quantity, 0)
 
-    def buy(self, position_type: str, price: float, observed_date: Optional[str] = None):
+    def buy(self, position_type: str, price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
         """Place a buy order."""
         quantity = self.calculate_buy_quantity(price)
         if quantity > 0:
@@ -134,6 +134,8 @@ class TradeKitBot:
                     position_size=quantity,
                     observed_entry_date=observed_date,
                     entry_submit_price=price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
                     action="BUY"
                 )
             else:
@@ -148,7 +150,7 @@ class TradeKitBot:
             print("Not enough cash to place a trade: " + str(self.cash))
             return -1
 
-    def sell(self, position_type: str, price: float, observed_date: Optional[str] = None):
+    def sell(self, position_type: str, price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
         """Place a sell order."""
         quantity = self.calculate_sell_quantity()
         if quantity > 0:
@@ -161,6 +163,8 @@ class TradeKitBot:
                     position_size=quantity,
                     observed_entry_date=observed_date,
                     entry_submit_price=price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
                     action="SELL"
                 )
             else:
