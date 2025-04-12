@@ -50,6 +50,7 @@ class TradeKitDB:
             exit_submit_price NUMERIC(10,2) NULL,
             exit_date TIMESTAMP NULL,
             exit_price NUMERIC(10, 2) NULL,
+            exit_reason VARCHAR(50) NULL CHECK (exit_reason IN ('TECHNICAL', 'STOP_LOSS', 'TAKE_PROFIT', 'MANUAL', 'TIMEOUT', 'SIGNAL', 'OTHER')),
             order_type VARCHAR(6) CHECK (order_type IN ('LIMIT', 'MARKET')) NOT NULL DEFAULT 'MARKET',
             status VARCHAR(9) CHECK (status IN ('PENDING', 'OPEN', 'PARTIAL', 'CLOSED', 'CANCELED', 'FAILED')) NOT NULL
         );
@@ -133,7 +134,7 @@ class TradeKitDB:
         query = """
         SELECT id, bot_name, ticker, stop_loss, take_profit, observed_entry_date, observed_exit_date, position_type,  
             position_size, action, entry_submit_date, entry_submit_price, entry_date, entry_price, 
-            exit_submit_date, exit_submit_price, exit_date, exit_price, 
+            exit_submit_date, exit_submit_price, exit_date, exit_price, exit_reason,
             order_type, status
         FROM trades
         WHERE bot_name = %s AND ticker = %s AND status = 'OPEN'
@@ -164,6 +165,7 @@ class TradeKitDB:
                     exit_submit_price=row["exit_submit_price"],
                     exit_date=row["exit_date"],
                     exit_price=row["exit_price"],
+                    exit_reason=row["exit_reason"],
                     order_type=row["order_type"],
                     status=row["status"]
                 )
@@ -176,7 +178,7 @@ class TradeKitDB:
         query = """
         SELECT id, bot_name, ticker, stop_loss, take_profit, observed_entry_date, observed_exit_date, position_type, 
             position_size, action, entry_submit_date, entry_submit_price, entry_date, entry_price, 
-            exit_submit_date, exit_submit_price, exit_date, exit_price, 
+            exit_submit_date, exit_submit_price, exit_date, exit_price, exit_reason,
             order_type, status
         FROM trades
         WHERE bot_name = %s AND ticker = %s
@@ -207,6 +209,7 @@ class TradeKitDB:
                     exit_submit_price=row["exit_submit_price"],
                     exit_date=row["exit_date"],
                     exit_price=row["exit_price"],
+                    exit_reason=row["exit_reason"],
                     order_type=row["order_type"],
                     status=row["status"]
                 )
