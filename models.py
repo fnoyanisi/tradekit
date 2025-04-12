@@ -19,6 +19,7 @@ class TradeKitPosition:
         exit_submit_price: Optional[float] = None, 
         exit_date: Optional[datetime] = None, 
         exit_price: Optional[float] = None,
+        exit_reason: Optional[str] = None,
         stop_loss: Optional[float] = None,
         take_profit: Optional[float] = None,
         id: Optional[int] = None, 
@@ -77,6 +78,7 @@ class TradeKitPosition:
             "exit_submit_price": self.exit_submit_price,
             "exit_date": self.exit_date.strftime('%Y-%m-%d %H:%M:%S') if self.exit_date else None,
             "exit_price": self.exit_price,
+            "exit_reason": self.exit_reason,
             "order_type": self.order_type,
             "status": self.status
         }
