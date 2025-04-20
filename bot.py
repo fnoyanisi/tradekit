@@ -132,7 +132,7 @@ class TradeKitBot:
         return max(quantity, 0)
 
     def buy(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
-        self.place_order(   
+        return self.place_order(   
             action="BUY",
             position_type=position_type,
             price=price,
@@ -142,7 +142,7 @@ class TradeKitBot:
         )
 
     def sell(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
-        self.place_order(
+        return self.place_order(
             action="SELL",
             position_type=position_type,
             price=price,

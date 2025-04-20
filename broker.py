@@ -16,8 +16,12 @@ class TradeKitBroker:
         if self.position.status not in {"PENDING", "OPEN"}:
             raise ValueError(f"Order for position id: {self.position.id} is not in PENDING or OPEN status")
 
-        self._submit_order_to_broker()
-        self._finalize_order_execution()
+        try:
+            self._submit_order_to_broker()
+            self._finalize_order_execution()
+        except Exception as e:
+            raise RuntimeError(f"Error executing order for position id: {self.position.id}. Error: {e}")
+        return self.position.position_size
 
     def _submit_order_to_broker(self):
         """Submit the order to the broker API."""
