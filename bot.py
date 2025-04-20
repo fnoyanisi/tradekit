@@ -131,7 +131,7 @@ class TradeKitBot:
         quantity = int(self.position.position_size * ratio)
         return max(quantity, 0)
 
-    def buy(self, position_type: str, price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
+    def buy(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
         self.place_order(   
             action="BUY",
             position_type=position_type,
@@ -141,7 +141,7 @@ class TradeKitBot:
             take_profit=take_profit
         )
 
-    def sell(self, position_type: str, price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
+    def sell(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
         self.place_order(
             action="SELL",
             position_type=position_type,
@@ -151,7 +151,7 @@ class TradeKitBot:
             take_profit=take_profit
         )
 
-    def place_order(self, action: Literal["BUY","SELL"], position_type: str, price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
+    def place_order(self, action: Literal["BUY","SELL"], position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
         """Place a buy or sell order."""
         if price <= 0:
             raise ValueError("Price must be greater than 0")
