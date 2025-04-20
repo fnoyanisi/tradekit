@@ -57,27 +57,27 @@ class TradeKitPosition:
         self.take_profit = take_profit  # Optional take profit price
 
         # order details
-        if entry_submit_price <= 0:
+        if entry_submit_price and entry_submit_price <= 0:
             raise ValueError(f"Invalid entry_submit_price: {entry_submit_price}. Must be greater than 0")
         self.entry_submit_price = entry_submit_price
         self.entry_submit_date = entry_submit_date or datetime.now()
         
         # trade execution details
         self.entry_date = entry_date
-        if entry_price <= 0:
+        if entry_price and entry_price <= 0:
             raise ValueError(f"Invalid entry_price: {entry_price}. Must be greater than 0")
         self.entry_price = entry_price
         
         # close details
         self.exit_submit_date = exit_submit_date
-        if exit_submit_price <= 0:
+        if exit_submit_price and exit_submit_price <= 0:
             raise ValueError(f"Invalid exit_submit_price: {exit_submit_price}. Must be greater than 0")
         self.exit_submit_price = exit_submit_price
         self.exit_date = exit_date
-        if exit_price <= 0:
+        if exit_price and exit_price <= 0:
             raise ValueError(f"Invalid exit_price: {exit_price}. Must be greater than 0")
         self.exit_price = exit_price
-        if not (1 <= len(exit_reason) <= 50):  
+        if exit_reason and not (1 <= len(exit_reason) <= 50):  
             raise ValueError("Exit reason must be between 1 and 50 characters")
         self.exit_reason = exit_reason or None
 
