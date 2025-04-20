@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Callable, Optional
+from typing import Callable, Optional, Literal
 from .models import TradeKitPosition
 from .database import TradeKitDB
 from .broker import TradeKitBroker
@@ -132,74 +132,58 @@ class TradeKitBot:
         return max(quantity, 0)
 
     def buy(self, position_type: str, price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
-        """Place a buy order."""
-        quantity = self.calculate_buy_quantity(price)
-        if quantity > 0:
-            if self.position is None or self.position.status == "CLOSED":
-                # open a new position
-                self.position = TradeKitPosition(
-                    bot_name=self.name,
-                    ticker=self.ticker,
-                    position_type=position_type,
-                    position_size=quantity,
-                    observed_entry_date=observed_date,
-                    entry_submit_price=price,
-                    stop_loss=stop_loss,
-                    take_profit=take_profit,
-                    action="BUY"
-                )
-            else:
-                # existing position
-                self.position.action = "BUY"
-                self.position.observed_exit_date = observed_date
-                
-            # the order hasn't been executed yet
-            try:
-                q = self.submit_order(position_type=position_type, price=price)
-            except Exception as e:
-                print("Error submitting order: " + str(e))
-                return -1
-            
-            self.position.position_size -= q
-            return q
-        else:
-            print("Not enough cash to place a trade: " + str(self.cash))
-            return -1
+        self.place_order(   
+            action="BUY",
+            position_type=position_type,
+            price=price,
+            observed_date=observed_date,
+            stop_loss=stop_loss,
+            take_profit=take_profit
+        )
 
     def sell(self, position_type: str, price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
-        """Place a sell order."""
-        quantity = self.calculate_sell_quantity()
-        if quantity > 0:
-            if self.position is None or self.position.status == "CLOSED":
-                # open a new position
-                self.position = TradeKitPosition(
-                    bot_name=self.name,
-                    ticker=self.ticker,
-                    position_type=position_type,
-                    position_size=quantity,
-                    observed_entry_date=observed_date,
-                    entry_submit_price=price,
-                    stop_loss=stop_loss,
-                    take_profit=take_profit,
-                    action="SELL"
-                )
-            else:
-                # existing position
-                self.position.action = "SELL"
-                self.position.observed_exit_date = observed_date
+        self.place_order(
+            action="SELL",
+            position_type=position_type,
+            price=price,
+            observed_date=observed_date,
+            stop_loss=stop_loss,
+            take_profit=take_profit
+        )
 
-            # The order hasn't been executed yet
-            try:
-                q = self.submit_order(position_type=position_type, price=price)
-            except Exception as e:
-                print("Error submitting order: " + str(e))
-                return -1
-            
-            self.position.position_size -= q
-            return q
+    def place_order(self, action: Literal["BUY","SELL"], position_type: str, price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
+        """Place a buy or sell order."""
+        if price <= 0:
+            raise ValueError("Price must be greater than 0")
+
+        quantity = self.calculate_buy_quantity(price) if action == "BUY" else self.calculate_sell_quantity()
+        if quantity <= 0:
+            raise ValueError(f"Not enough {'cash' if action == 'BUY' else 'shares'} to place the order")
+
+        if self.position is None or self.position.status == "CLOSED":
+            # Open a new position
+            self.position = TradeKitPosition(
+                bot_name=self.name,
+                ticker=self.ticker,
+                position_type=position_type,
+                position_size=quantity,
+                observed_entry_date=observed_date,
+                entry_submit_price=price,
+                stop_loss=stop_loss,
+                take_profit=take_profit,
+                action=action
+            )
         else:
-            print("Not enough shares to sell: " + str(self.position.position_size))
-            return -1
+            # Update existing position
+            self.position.action = action
+            self.position.observed_exit_date = observed_date
+
+        try:
+            executed_quantity = self.submit_order(position_type=position_type, price=price)
+            self.position.position_size -= executed_quantity
+            return executed_quantity
+        except Exception as e:
+            raise RuntimeError(f"Error placing {action} order: {e}")
 
     def submit_order(self, position_type: str, price: float)->int:
         #Based on the position and order types, either update the database or create a new entry
