@@ -40,6 +40,10 @@ class TradeKitBot:
             raise ValueError(f"Invalid aggressiveness level: {level}")
     
     def set_buy_aggressiveness_ratios(self, max_ratio: float, moderate_ratio: float, conservative_ratio: float):
+        if not (0 <= max_ratio <= 1 and 0 <= moderate_ratio <= 1 and 0 <= conservative_ratio <= 1):
+            raise ValueError("Aggressiveness ratios must be between 0 and 1.")
+        if not (max_ratio >= moderate_ratio >= conservative_ratio):
+            raise ValueError("Aggressiveness ratios must be in descending order.")
         self.buy_aggressiveness_levels = {
             "max": max_ratio,
             "moderate": moderate_ratio,
@@ -53,6 +57,10 @@ class TradeKitBot:
             raise ValueError(f"Invalid aggressiveness level: {level}")
     
     def set_sell_aggressiveness_ratios(self, max_ratio: float, moderate_ratio: float, conservative_ratio: float):
+        if not (0 <= max_ratio <= 1 and 0 <= moderate_ratio <= 1 and 0 <= conservative_ratio <= 1):
+            raise ValueError("Aggressiveness ratios must be between 0 and 1.")
+        if not (max_ratio >= moderate_ratio >= conservative_ratio):
+            raise ValueError("Aggressiveness ratios must be in descending order.")
         self.sell_aggressiveness_levels = {
             "max": max_ratio,
             "moderate": moderate_ratio,
@@ -117,6 +125,8 @@ class TradeKitBot:
     
     def calculate_sell_quantity(self) -> int:
         """Determine how many shares to sell based on position size and sell aggressiveness level."""
+        if self.position is None:
+            raise ValueError("No open position to sell.")
         ratio = self.sell_aggressiveness_levels[self.sell_aggressiveness]
         quantity = int(self.position.position_size * ratio)
         return max(quantity, 0)
@@ -142,9 +152,15 @@ class TradeKitBot:
                 # existing position
                 self.position.action = "BUY"
                 self.position.observed_exit_date = observed_date
+                
             # the order hasn't been executed yet
-            q = self.submit_order(position_type=position_type, price=price)
-            self.position.position_size += q
+            try:
+                q = self.submit_order(position_type=position_type, price=price)
+            except Exception as e:
+                print("Error submitting order: " + str(e))
+                return -1
+            
+            self.position.position_size -= q
             return q
         else:
             print("Not enough cash to place a trade: " + str(self.cash))
@@ -171,8 +187,14 @@ class TradeKitBot:
                 # existing position
                 self.position.action = "SELL"
                 self.position.observed_exit_date = observed_date
+
             # The order hasn't been executed yet
-            q = self.submit_order(position_type=position_type, price=price)
+            try:
+                q = self.submit_order(position_type=position_type, price=price)
+            except Exception as e:
+                print("Error submitting order: " + str(e))
+                return -1
+            
             self.position.position_size -= q
             return q
         else:

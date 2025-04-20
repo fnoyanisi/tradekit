@@ -34,7 +34,7 @@ class TradeKitDB:
         CREATE TABLE IF NOT EXISTS trades (
             id SERIAL PRIMARY KEY,
             bot_name VARCHAR(50) NOT NULL,
-            ticker VARCHAR(10) NOT NULL,
+            ticker VARCHAR(30) NOT NULL,
             stop_loss NUMERIC(10,2) NULL,
             take_profit NUMERIC(10,2) NULL,
             observed_entry_date TIMESTAMP NULL,
@@ -94,6 +94,7 @@ class TradeKitDB:
             print(f"{self.__class__.__name__} : Trade position {trade_position.id} updated successfully.")
         except Exception as e:
             print(f"{self.__class__.__name__} : Error updating trade position {trade_position.id}: {e}")
+            raise
 
     def create_position(self, trade_position: TradeKitPosition):        
         """Insert a new open trade position into the database."""
@@ -123,11 +124,10 @@ class TradeKitDB:
                 trade_id = cur.fetchone()["id"]
                 self.conn.commit()
                 return trade_id
-        
         except Exception as e:
-            self.conn.rollback()  # Ensure rollback on failure
+            self.conn.rollback()
             print(f"{self.__class__.__name__} : Error creating trade position: {e}")
-            return None
+            raise
 
     def get_latest_open_position(self, bot_name, ticker):
         """Fetch the latest open trade position for a bot on a specific ticker."""
@@ -232,7 +232,7 @@ class TradeKitDB:
                 return result['observed_exit_date'] if result else None
         except Exception as e:
             print(f"Error fetching last closed trade exit date: {e}")
-            return None
+            raise
 
 
     def close(self):

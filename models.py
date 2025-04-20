@@ -1,17 +1,22 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 
 class TradeKitPosition:
+    VALID_POSITION_TYPES = ["LONG", "SHORT"]
+    VALID_ACTIONS = ["BUY", "SELL"]
+    VALID_STATUSES = ["PENDING", "OPEN", "PARTIAL", "CLOSED", "CANCELED", "FAILED"]
+    VALID_ORDER_TYPES = ["LIMIT", "MARKET"]
+
     def __init__(
         self, 
         bot_name: str, 
         ticker: str, 
-        position_type: str,  # 'LONG' or 'SHORT'
+        position_type: Literal["LONG", "SHORT"],
         position_size: int, 
-        action: str,  # 'BUY' or 'SELL'
+        action: Literal["BUY", "SELL"],
         entry_submit_price: float, 
-        order_type: str = "MARKET",  # 'LIMIT' or 'MARKET'
-        status: str = "PENDING",  # 'PENDING', 'OPEN', 'PARTIAL', 'CLOSED', 'CANCELED', 'FAILED'
+        order_type: Literal["LIMIT", "MARKET"] = "MARKET",
+        status: Literal["PENDING", "OPEN", "PARTIAL", "CLOSED", "CANCELED", "FAILED"] = "PENDING",
         entry_submit_date: Optional[datetime] = None, 
         entry_date: Optional[datetime] = None, 
         entry_price: Optional[float] = None, 
@@ -27,11 +32,23 @@ class TradeKitPosition:
         observed_exit_date: Optional[datetime] = None
     ):
         self.id = id  # Primary Key, can be None for new trades before DB assignment
+        if not (1 <= len(bot_name) <= 50):  
+            raise ValueError("Bot name must be between 1 and 50 characters")
         self.bot_name = bot_name
+        if not (1 <= len(ticker) <= 30):  
+            raise ValueError("Ticker must be between 1 and 30 characters")
+        if not ticker.isalnum():
+            raise ValueError("Ticker must be alphanumeric")
         self.ticker = ticker
-        self.position_type = position_type  # 'LONG' or 'SHORT'
+        if position_type not in self.VALID_POSITION_TYPES:
+            raise ValueError(f"Invalid position_type: {position_type}. Must be one of {self.VALID_POSITION_TYPES}")
+        self.position_type = position_type
+        if position_size <= 0:
+            raise ValueError(f"Invalid position_size: {position_size}. Must be greater than 0")
         self.position_size = position_size
-        self.action = action  # 'BUY' or 'SELL'
+        if action not in self.VALID_ACTIONS:
+            raise ValueError(f"Invalid action: {action}. Must be one of {self.VALID_ACTIONS}")
+        self.action = action
         self.observed_entry_date = observed_entry_date or datetime.now()
         self.observed_exit_date = observed_exit_date or None
 
@@ -40,22 +57,37 @@ class TradeKitPosition:
         self.take_profit = take_profit  # Optional take profit price
 
         # order details
+        if entry_submit_price <= 0:
+            raise ValueError(f"Invalid entry_submit_price: {entry_submit_price}. Must be greater than 0")
         self.entry_submit_price = entry_submit_price
         self.entry_submit_date = entry_submit_date or datetime.now()
         
         # trade execution details
         self.entry_date = entry_date
+        if entry_price <= 0:
+            raise ValueError(f"Invalid entry_price: {entry_price}. Must be greater than 0")
         self.entry_price = entry_price
         
         # close details
         self.exit_submit_date = exit_submit_date
+        if exit_submit_price <= 0:
+            raise ValueError(f"Invalid exit_submit_price: {exit_submit_price}. Must be greater than 0")
         self.exit_submit_price = exit_submit_price
         self.exit_date = exit_date
+        if exit_price <= 0:
+            raise ValueError(f"Invalid exit_price: {exit_price}. Must be greater than 0")
         self.exit_price = exit_price
+        if not (1 <= len(exit_reason) <= 50):  
+            raise ValueError("Exit reason must be between 1 and 50 characters")
+        self.exit_reason = exit_reason or None
 
         # order type & status
-        self.order_type = order_type  # 'LIMIT' or 'MARKET'
-        self.status = status  # 'PENDING', 'OPEN', 'PARTIAL', 'CLOSED', 'CANCELED', 'FAILED'
+        if order_type not in self.VALID_ORDER_TYPES:
+            raise ValueError(f"Invalid order_type: {order_type}. Must be one of {self.VALID_ORDER_TYPES}")  
+        self.order_type = order_type
+        if status not in self.VALID_STATUSES:
+            raise ValueError(f"Invalid status: {status}. Must be one of {self.VALID_STATUSES}") 
+        self.status = status
 
     def to_dict(self):
         """Converts trade details into a dictionary for database storage."""
