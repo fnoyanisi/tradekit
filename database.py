@@ -91,7 +91,7 @@ class TradeKitDB:
             cursor = self.conn.cursor()
             cursor.execute(sql_query, values)
             self.conn.commit()
-            print(f"{self.__class__.__name__} : Trade position {trade_position.id} updated successfully.")
+            print(f"{self.__class__.__name__} : Trade position {trade_position.id} updated successfully for {len(fields_to_update)} fields.")
         except Exception as e:
             print(f"{self.__class__.__name__} : Error updating trade position {trade_position.id}: {e}")
             raise
