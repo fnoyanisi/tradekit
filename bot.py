@@ -5,7 +5,16 @@ from .database import TradeKitDB
 from .broker import TradeKitBroker
 
 class TradeKitBot:
-    def __init__(self, name: str, ticker: str, db: TradeKitDB, broker: TradeKitBroker):
+    def __init__(
+        self,
+        name: str,
+        ticker: str,
+        db: TradeKitDB,
+        broker: TradeKitBroker,
+        mode: Literal["live", "backtest"] = "live"
+    ):
+        if mode not in ["live", "backtest"]:
+            raise ValueError(f"Invalid mode: {mode}")
         self.name = name
         self.ticker = ticker
         self.data = pd.DataFrame()
