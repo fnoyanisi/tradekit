@@ -13,12 +13,13 @@ class TradeKitBot:
         broker: TradeKitBroker,
         mode: Literal["live", "backtest"] = "live"
     ):
-        if mode not in ["live", "backtest"]:
-            raise ValueError(f"Invalid mode: {mode}")
         self.name = name
         self.ticker = ticker
-        self.data = pd.DataFrame()
         self.broker = broker
+        if mode not in ["live", "backtest"]:
+            raise ValueError(f"Invalid mode: {mode}")
+        self.mode = mode
+        self.data = pd.DataFrame()
         self.commission = 0
         self.db = db
         self.position = None
