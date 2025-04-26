@@ -12,7 +12,7 @@ class TradeKitPosition:
         bot_name: str, 
         ticker: str, 
         position_type: Literal["LONG", "SHORT"],
-        position_size: int, 
+        quantity: int, 
         action: Literal["BUY", "SELL"],
         entry_submit_price: float, 
         order_type: Literal["LIMIT", "MARKET"] = "MARKET",
@@ -43,9 +43,9 @@ class TradeKitPosition:
         if position_type not in self.VALID_POSITION_TYPES:
             raise ValueError(f"Invalid position_type: {position_type}. Must be one of {self.VALID_POSITION_TYPES}")
         self.position_type = position_type
-        if position_size <= 0:
-            raise ValueError(f"Invalid position_size: {position_size}. Must be greater than 0")
-        self.position_size = position_size
+        if quantity <= 0:
+            raise ValueError(f"Invalid quantity: {quantity}. Must be greater than 0")
+        self.quantity = quantity
         if action not in self.VALID_ACTIONS:
             raise ValueError(f"Invalid action: {action}. Must be one of {self.VALID_ACTIONS}")
         self.action = action
@@ -98,7 +98,7 @@ class TradeKitPosition:
             "observed_entry_date": self.observed_entry_date.strftime('%Y-%m-%d %H:%M:%S') if self.observed_entry_date else None,
             "observed_exit_date": self.observed_exit_date.strftime('%Y-%m-%d %H:%M:%S') if self.observed_exit_date else None,
             "position_type": self.position_type,
-            "position_size": self.position_size,
+            "quantity": self.quantity,
             "action": self.action,
             "stop_loss": self.stop_loss,
             "take_profit": self.take_profit,

@@ -40,7 +40,7 @@ class TradeKitDB:
             observed_entry_date TIMESTAMP NULL,
             observed_exit_date TIMESTAMP NULL,
             position_type VARCHAR(5) CHECK (position_type IN ('LONG', 'SHORT')) NOT NULL DEFAULT 'LONG',
-            position_size INT NOT NULL,
+            quantity INT NOT NULL,
             action VARCHAR(4) CHECK (action IN ('BUY', 'SELL')) NOT NULL,
             entry_submit_date TIMESTAMP NULL,
             entry_submit_price NUMERIC(10,2) NOT NULL,
@@ -100,8 +100,8 @@ class TradeKitDB:
         """Insert a new open trade position into the database."""
         
         insert_query = """
-        INSERT INTO trades (bot_name, ticker, stop_loss, take_profit, position_type, position_size, entry_submit_price, action, entry_submit_date, status)
-        VALUES (%(bot_name)s, %(ticker)s, %(stop_loss)s, %(take_profit)s, %(position_type)s, %(position_size)s, %(entry_submit_price)s, %(action)s, %(entry_submit_date)s, %(status)s)
+        INSERT INTO trades (bot_name, ticker, stop_loss, take_profit, position_type, quantity, entry_submit_price, action, entry_submit_date, status)
+        VALUES (%(bot_name)s, %(ticker)s, %(stop_loss)s, %(take_profit)s, %(position_type)s, %(quantity)s, %(entry_submit_price)s, %(action)s, %(entry_submit_date)s, %(status)s)
         RETURNING id;
         """
 
@@ -111,7 +111,7 @@ class TradeKitDB:
             "stop_loss": trade_position.stop_loss,
             "take_profit": trade_position.take_profit,
             "position_type": trade_position.position_type,
-            "position_size": trade_position.position_size,
+            "quantity": trade_position.quantity,
             "entry_submit_price": trade_position.entry_submit_price,
             "action": trade_position.action,
             "entry_submit_date": trade_position.entry_submit_date if trade_position.entry_submit_date else None,  # NULL handling
@@ -133,7 +133,7 @@ class TradeKitDB:
         """Fetch the latest open trade position for a bot on a specific ticker."""
         query = """
         SELECT id, bot_name, ticker, stop_loss, take_profit, observed_entry_date, observed_exit_date, position_type,  
-            position_size, action, entry_submit_date, entry_submit_price, entry_date, entry_price, 
+            quantity, action, entry_submit_date, entry_submit_price, entry_date, entry_price, 
             exit_submit_date, exit_submit_price, exit_date, exit_price, exit_reason,
             order_type, status
         FROM trades
@@ -155,7 +155,7 @@ class TradeKitDB:
                     observed_entry_date=row["observed_entry_date"],
                     observed_exit_date=row["observed_exit_date"],
                     position_type=row["position_type"],
-                    position_size=row["position_size"],
+                    quantity=row["quantity"],
                     action=row["action"],
                     entry_submit_date=row["entry_submit_date"],
                     entry_submit_price=row["entry_submit_price"],
@@ -177,7 +177,7 @@ class TradeKitDB:
         """Fetch the latest trade position for a bot on a specific ticker"""
         query = """
         SELECT id, bot_name, ticker, stop_loss, take_profit, observed_entry_date, observed_exit_date, position_type, 
-            position_size, action, entry_submit_date, entry_submit_price, entry_date, entry_price, 
+            quantity, action, entry_submit_date, entry_submit_price, entry_date, entry_price, 
             exit_submit_date, exit_submit_price, exit_date, exit_price, exit_reason,
             order_type, status
         FROM trades
@@ -199,7 +199,7 @@ class TradeKitDB:
                     observed_entry_date=row["observed_entry_date"],
                     observed_exit_date=row["observed_exit_date"],
                     position_type=row["position_type"],
-                    position_size=row["position_size"],
+                    quantity=row["quantity"],
                     action=row["action"],
                     entry_submit_date=row["entry_submit_date"],
                     entry_submit_price=row["entry_submit_price"],

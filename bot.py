@@ -20,7 +20,6 @@ class TradeKitBot:
             raise ValueError(f"Invalid mode: {mode}")
         self.mode = mode
         self.data = pd.DataFrame()
-        self.commission = 0
         self.db = db
         self.position = None
         self.cash = 0.0
@@ -77,11 +76,6 @@ class TradeKitBot:
             "conservative": conservative_ratio
         }
 
-    def deposit(self, amount: float):
-        if amount < 0:
-            raise ValueError("Deposit amount must be positive.")
-        self.cash += amount
-
     def load_data(self, data):
         """Load the historic trade data. Must include OHLC and volume information."""
         if not isinstance(data, pd.DataFrame):
@@ -129,7 +123,7 @@ class TradeKitBot:
         """Determine how many shares to buy based on available cash and aggressiveness level."""
         ratio = self.buy_aggressiveness_levels[self.buy_aggressiveness]
         budget = self.cash * ratio
-        budget_after_commission = budget * (1 - self.commission)
+        budget_after_commission = budget * (1 - self.broker.commission)
         quantity = int(budget_after_commission / price)
         return max(quantity, 0)
     
@@ -138,7 +132,7 @@ class TradeKitBot:
         if self.position is None:
             raise ValueError("No open position to sell.")
         ratio = self.sell_aggressiveness_levels[self.sell_aggressiveness]
-        quantity = int(self.position.position_size * ratio)
+        quantity = int(self.position.quantity * ratio)
         return max(quantity, 0)
 
     def buy(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
@@ -176,7 +170,7 @@ class TradeKitBot:
                 bot_name=self.name,
                 ticker=self.ticker,
                 position_type=position_type,
-                position_size=quantity,
+                quantity=quantity,
                 observed_entry_date=observed_date,
                 entry_submit_price=price,
                 stop_loss=stop_loss,
@@ -190,7 +184,7 @@ class TradeKitBot:
 
         try:
             executed_quantity = self.submit_order(position_type=position_type, price=price)
-            self.position.position_size -= executed_quantity
+            self.position.quantity -= executed_quantity
             return executed_quantity
         except Exception as e:
             raise RuntimeError(f"Error placing {action} order: {e}")
