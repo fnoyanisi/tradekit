@@ -17,7 +17,7 @@ class TradeKitBroker:
             raise ValueError("Deposit amount must be positive.")
         self.cash += amount
 
-    def fund_assets(self, amount: float):
+    def deposit_assets(self, amount: float):
         if amount < 0:
             raise ValueError("Funding amount must be positive.")
         self.asset_holdings += amount
