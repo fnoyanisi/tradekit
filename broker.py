@@ -34,7 +34,7 @@ class TradeKitBroker:
             self._finalize_order_execution()
         except Exception as e:
             raise RuntimeError(f"Error executing order for position id: {self.active_position.id}. Error: {e}")
-        return self.active_position.position_size
+        return self.active_position.quantity
 
     def _submit_order_to_broker(self):
         """Submit the order to the broker API."""
@@ -54,12 +54,16 @@ class TradeKitBroker:
 
     def _handle_buy_execution(self):
         """Handle BUY order execution."""
-        cost = self.active_position.entry_submit_price * self.active_position.position_size
+        if self.active_position.position_type == "SHORT":
+            p = self.active_position.exit_submit_price
+        else:
+            p = self.active_position.entry_submit_price
+        cost = p * self.active_position.quantity
         self.cash -= cost
         if self.cash < 0:
             self.cash += cost
             raise ValueError("Insufficient funds to execute the buy order.")
-        self.asset_holdings += self.active_position.position_size
+        self.asset_holdings += self.active_position.quantity
 
         if self.active_position.position_type == "LONG":
             self.active_position.status = "OPEN"
@@ -73,10 +77,14 @@ class TradeKitBroker:
 
     def _handle_sell_execution(self):
         """Handle SELL order execution."""
-        proceeds = self.active_position.exit_submit_price * self.active_position.position_size
-        self.asset_holdings -= self.active_position.position_size
+        if self.active_position.position_type == "LONG":
+            p = self.active_position.exit_submit_price
+        else:
+            p = self.active_position.entry_submit_price
+        proceeds = p * self.active_position.quantity
+        self.asset_holdings -= self.active_position.quantity
         if self.asset_holdings < 0:
-            self.asset_holdings += self.active_position.position_size
+            self.asset_holdings += self.active_position.quantity
             raise ValueError("Insufficient shares to execute the sell order.")
         self.cash += proceeds
 
