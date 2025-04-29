@@ -129,10 +129,14 @@ class TradeKitBot:
     
     def calculate_sell_quantity(self) -> int:
         """Determine how many shares to sell based on position size and sell aggressiveness level."""
-        if self.position is None:
+        if self.position is None and self.broker.asset_holdings == 0:
             raise ValueError("No open position to sell.")
         ratio = self.sell_aggressiveness_levels[self.sell_aggressiveness]
-        quantity = int(self.position.quantity * ratio)
+        if self.position is not None:
+            q= self.position.quantity
+        else:
+            q = self.broker.asset_holdings
+        quantity = int(q * ratio)
         return max(quantity, 0)
 
     def buy(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
