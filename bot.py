@@ -22,7 +22,6 @@ class TradeKitBot:
         self.data = pd.DataFrame()
         self.db = db
         self.position = None
-        self.cash = 0.0
 
         # determines the % of cash that can be spent 
         # on a single trade. Default is "moderate"
@@ -41,6 +40,17 @@ class TradeKitBot:
             "conservative": 0.4 # 40%
         }
         self.sell_aggressiveness = "max"
+
+        # whether stop the trade or buy/sell with the available resurces
+        # adjust - buy/sell with the available resources
+        # skip - skip the trade
+        # halt - stop the trade        
+        self.insufficient_resources_policy_values = {
+            "adjust",
+            "skip",
+            "halt"
+        }
+        self.insufficient_resources_policy = "adjust"
 
     def set_buy_aggressiveness(self, level: str):
         if level in self.buy_aggressiveness_levels:
@@ -75,6 +85,11 @@ class TradeKitBot:
             "moderate": moderate_ratio,
             "conservative": conservative_ratio
         }
+
+    def set_insufficient_resources_policy(self, policy: str):
+        if policy not in self.insufficient_resources_policy_values:
+            raise ValueError(f"Invalid policy: {policy}. Must be one of {self.insufficient_resources_policy_values}")
+        self.insufficient_resources_policy = policy
 
     def load_data(self, data):
         """Load the historic trade data. Must include OHLC and volume information."""
@@ -122,7 +137,7 @@ class TradeKitBot:
     def calculate_buy_quantity(self, price: float) -> int:
         """Determine how many shares to buy based on available cash and aggressiveness level."""
         ratio = self.buy_aggressiveness_levels[self.buy_aggressiveness]
-        budget = self.cash * ratio
+        budget = self.broker.cash * ratio
         budget_after_commission = budget * (1 - self.broker.commission)
         quantity = int(budget_after_commission / price)
         return max(quantity, 0)
@@ -166,7 +181,11 @@ class TradeKitBot:
 
         quantity = self.calculate_buy_quantity(price) if action == "BUY" else self.calculate_sell_quantity()
         if quantity <= 0:
-            raise ValueError(f"Not enough {'cash' if action == 'BUY' else 'shares'} to place the order")
+            if self.insufficient_resources_policy == "halt":
+                raise ValueError(f"Not enough {'cash' if action == 'BUY' else 'shares'} to place the order")
+            elif self.insufficient_resources_policy == "adjust":
+                # calculate quantity here
+                None
 
         if self.position is None or self.position.status == "CLOSED":
             # Open a new position
