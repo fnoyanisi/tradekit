@@ -12,6 +12,13 @@ class TradeKitBroker:
         self.asset_holdings = 0
         self.commission = 0.0
 
+    def statement(self):
+        return {
+            "cash": self.cash,
+            "assets": self.asset_holdings,
+            "commission": self.commission
+        }
+
     def deposit(self, amount: float):
         if amount < 0:
             raise ValueError("Deposit amount must be positive.")
