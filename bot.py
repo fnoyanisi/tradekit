@@ -134,25 +134,36 @@ class TradeKitBot:
             self.load_position()
             self.strategy(self)
 
+    def enforce_quantity_policy(self, quantity: int, trade_type: str) -> int:
+        if quantity > 0:
+            return quantity
+
+        policy = self.insufficient_resources_policy
+        if policy == "adjust":
+            return 0
+        elif policy == "skip":
+            return 0
+        elif policy == "halt":
+            raise RuntimeError(f"Cannot execute {trade_type} trade: insufficient resources.")
+        else:
+            raise ValueError(f"Invalid insufficient_resources_policy: {policy}")
+
     def calculate_buy_quantity(self, price: float) -> int:
         """Determine how many shares to buy based on available cash and aggressiveness level."""
         ratio = self.buy_aggressiveness_levels[self.buy_aggressiveness]
         budget = self.broker.cash * ratio
         budget_after_commission = budget * (1 - self.broker.commission)
         quantity = int(budget_after_commission / price)
-        return max(quantity, 0)
-    
+        return self.enforce_quantity_policy(quantity, trade_type="buy")
+
     def calculate_sell_quantity(self) -> int:
         """Determine how many shares to sell based on position size and sell aggressiveness level."""
         if self.position is None and self.broker.asset_holdings == 0:
             raise RuntimeError("No open position to sell.")
         ratio = self.sell_aggressiveness_levels[self.sell_aggressiveness]
-        if self.position is not None:
-            q= self.position.quantity
-        else:
-            q = self.broker.asset_holdings
+        q = self.position.quantity if self.position else self.broker.asset_holdings
         quantity = int(q * ratio)
-        return max(quantity, 0)
+        return self.enforce_quantity_policy(quantity, trade_type="sell")
 
     def buy(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
         return self.place_order(   
@@ -180,12 +191,8 @@ class TradeKitBot:
             raise ValueError("Price must be greater than 0")
 
         quantity = self.calculate_buy_quantity(price) if action == "BUY" else self.calculate_sell_quantity()
-        if quantity <= 0:
-            if self.insufficient_resources_policy == "halt":
-                raise RuntimeError(f"Not enough {'cash' if action == 'BUY' else 'shares'} to place the order")
-            elif self.insufficient_resources_policy == "adjust":
-                # calculate quantity here
-                None
+        if quantity == 0 and self.insufficient_resources_policy == "skip":
+            return
 
         if self.position is None or self.position.status == "CLOSED":
             # Open a new position
