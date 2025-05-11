@@ -94,11 +94,11 @@ class TradeKitBot:
     def load_data(self, data):
         """Load the historic trade data. Must include OHLC and volume information."""
         if not isinstance(data, pd.DataFrame):
-            raise ValueError("Data must be a Pandas DataFrame")
+            raise TypeError("Data must be a Pandas DataFrame")
 
         required_columns = {'open', 'high', 'low', 'close', 'volume'}
         if not required_columns.issubset(data.columns):
-            raise ValueError(f"Data must contain the following columns: {required_columns}")
+            raise KeyError(f"Data must contain the following columns: {required_columns}")
 
         if not isinstance(data.index, pd.DatetimeIndex):
             try:
@@ -145,7 +145,7 @@ class TradeKitBot:
     def calculate_sell_quantity(self) -> int:
         """Determine how many shares to sell based on position size and sell aggressiveness level."""
         if self.position is None and self.broker.asset_holdings == 0:
-            raise ValueError("No open position to sell.")
+            raise RuntimeError("No open position to sell.")
         ratio = self.sell_aggressiveness_levels[self.sell_aggressiveness]
         if self.position is not None:
             q= self.position.quantity
