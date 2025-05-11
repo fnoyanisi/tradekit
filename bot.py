@@ -182,7 +182,7 @@ class TradeKitBot:
         quantity = self.calculate_buy_quantity(price) if action == "BUY" else self.calculate_sell_quantity()
         if quantity <= 0:
             if self.insufficient_resources_policy == "halt":
-                raise ValueError(f"Not enough {'cash' if action == 'BUY' else 'shares'} to place the order")
+                raise RuntimeError(f"Not enough {'cash' if action == 'BUY' else 'shares'} to place the order")
             elif self.insufficient_resources_policy == "adjust":
                 # calculate quantity here
                 None
