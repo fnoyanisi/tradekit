@@ -1,6 +1,7 @@
 import psycopg
 from psycopg.rows import dict_row
 from .models import TradeKitPosition
+import logging
 
 class TradeKitDB:
     def __init__(self, db_name, user, password, host="localhost", port=5432):
@@ -10,6 +11,16 @@ class TradeKitDB:
         self.host = host
         self.port = port
         self.conn = None
+        # set-up the logger
+        self.logger = logging.getLogger(__name__)
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+        self.logger.propagate = False
+
+        self.logger.debug("Logger initialized")
         self.connect()
         self.create_table()
 
@@ -24,9 +35,10 @@ class TradeKitDB:
                 port=self.port,
                 row_factory=dict_row  # Fetch results as dictionaries
             )
-            print(f"{self.__class__.__name__} : Connected to the database successfully.")
         except psycopg.Error as e:
-            print(f"{self.__class__.__name__} : Error connecting to database: {e}")
+            self.logger.debug(f"Error connecting to database: {e}")
+            raise
+        self.logger.debug(f"Database connection established.")
 
     def create_table(self):
         """Create a trades table if it doesn't exist."""
@@ -91,9 +103,9 @@ class TradeKitDB:
             cursor = self.conn.cursor()
             cursor.execute(sql_query, values)
             self.conn.commit()
-            print(f"{self.__class__.__name__} : Trade position {trade_position.id} updated successfully for {len(fields_to_update)} fields.")
+            self.logger.debug(f"Trade position {trade_position.id} updated successfully for {len(fields_to_update)} fields.")
         except Exception as e:
-            print(f"{self.__class__.__name__} : Error updating trade position {trade_position.id}: {e}")
+            self.logger.debug(f"Error updating trade position {trade_position.id}: {e}")
             raise
 
     def create_position(self, trade_position: TradeKitPosition):        
@@ -126,7 +138,7 @@ class TradeKitDB:
                 return trade_id
         except Exception as e:
             self.conn.rollback()
-            print(f"{self.__class__.__name__} : Error creating trade position: {e}")
+            self.logger.debug(f"Error creating trade position: {e}")
             raise
 
     def get_latest_open_position(self, bot_name, ticker):
@@ -231,7 +243,7 @@ class TradeKitDB:
                 result = cursor.fetchone()
                 return result['observed_exit_date'] if result else None
         except Exception as e:
-            print(f"Error fetching last closed trade exit date: {e}")
+            self.logger.debug(f"Error fetching last closed trade exit date: {e}")
             raise
 
 
@@ -239,4 +251,4 @@ class TradeKitDB:
         """Close database connection."""
         if self.conn:
             self.conn.close()
-            print(f"{self.__class__.__name__} : Database connection closed.")
+            self.logger.debug(f"Database connection closed.")
