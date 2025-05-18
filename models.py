@@ -31,6 +31,28 @@ class TradeKitPosition:
         observed_entry_date: Optional[datetime] = None,
         observed_exit_date: Optional[datetime] = None
     ):
+        """Initialize a TradeKitPosition object.
+        Args:
+            bot_name (str): Name of the trading bot.
+            ticker (str): Ticker symbol of the asset.
+            position_type (str): Type of position ("LONG" or "SHORT").
+            quantity (int): Quantity of the asset.
+            action (str): Action to be taken ("BUY" or "SELL").
+            entry_submit_price (float): Price at which the order is submitted.
+            order_type (str): Type of order ("LIMIT" or "MARKET").
+            status (str): Status of the trade.
+            entry_submit_date (datetime, optional): Date when the order was submitted.
+            entry_date (datetime, optional): Date when the trade was executed.
+            entry_price (float, optional): Price at which the trade was executed.
+            exit_submit_date (datetime, optional): Date when the exit order was submitted.
+            exit_submit_price (float, optional): Price at which the exit order was submitted.
+            exit_date (datetime, optional): Date when the trade was closed.
+            exit_price (float, optional): Price at which the trade was closed.
+            exit_reason (str, optional): Reason for exiting the trade.
+            stop_loss (float, optional): Stop loss price for risk management.
+            take_profit (float, optional): Take profit price for risk management.
+            id (int, optional): Unique identifier for the trade. Defaults to None.
+        """
         self.id = id  # Primary Key, can be None for new trades before DB assignment
         if not (1 <= len(bot_name) <= 50):  
             raise ValueError("Bot name must be between 1 and 50 characters")

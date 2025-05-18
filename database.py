@@ -5,6 +5,14 @@ import logging
 
 class TradeKitDB:
     def __init__(self, db_name, user, password, host="localhost", port=5432):
+        """
+        Initialize the database connection and create the trades table if it doesn't exist.
+        :param db_name: Name of the database.
+        :param user: Database user.
+        :param password: Database password.
+        :param host: Database host (default is localhost).
+        :param port: Database port (default is 5432).
+        """
         self.db_name = db_name
         self.user = user
         self.password = password

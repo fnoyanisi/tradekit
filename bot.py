@@ -13,6 +13,11 @@ class TradeKitBot:
         broker: TradeKitBroker,
         mode: Literal["live", "backtest"] = "live"
     ):
+        """ 
+        TradeKitBot is a class that represents a trading bot. It is responsible for managing the trading strategy,
+        executing trades, and interacting with the broker and the database.
+        It includes methods for loading data, calculating trade quantities, and placing orders.
+        """
         self.name = name
         self.ticker = ticker
         self.broker = broker
@@ -53,12 +58,14 @@ class TradeKitBot:
         self.insufficient_resources_policy = "adjust"
 
     def set_buy_aggressiveness(self, level: str):
+        """Set the aggressiveness level for buying. Must be one of 'max', 'moderate', or 'conservative'."""
         if level in self.buy_aggressiveness_levels:
             self.buy_aggressiveness = level
         else:
             raise ValueError(f"Invalid aggressiveness level: {level}")
     
     def set_buy_aggressiveness_ratios(self, max_ratio: float, moderate_ratio: float, conservative_ratio: float):
+        """Set the aggressiveness ratios for buying. Must be between 0 and 1."""
         if not (0 <= max_ratio <= 1 and 0 <= moderate_ratio <= 1 and 0 <= conservative_ratio <= 1):
             raise ValueError("Aggressiveness ratios must be between 0 and 1.")
         if not (max_ratio >= moderate_ratio >= conservative_ratio):
@@ -70,12 +77,14 @@ class TradeKitBot:
         }
 
     def set_sell_aggressiveness(self, level: str):
+        """Set the aggressiveness level for selling. Must be one of 'max', 'moderate', or 'conservative'."""
         if level in self.sell_aggressiveness_levels:
             self.sell_aggressiveness = level
         else:
             raise ValueError(f"Invalid aggressiveness level: {level}")
     
     def set_sell_aggressiveness_ratios(self, max_ratio: float, moderate_ratio: float, conservative_ratio: float):
+        """Set the aggressiveness ratios for selling. Must be between 0 and 1."""
         if not (0 <= max_ratio <= 1 and 0 <= moderate_ratio <= 1 and 0 <= conservative_ratio <= 1):
             raise ValueError("Aggressiveness ratios must be between 0 and 1.")
         if not (max_ratio >= moderate_ratio >= conservative_ratio):
@@ -87,12 +96,18 @@ class TradeKitBot:
         }
 
     def set_insufficient_resources_policy(self, policy: str):
+        """
+        Set the policy for handling insufficient resources. Must be one of 'adjust', 'skip', or 'halt'.
+        'adjust' - buy/sell with the available resources
+        'skip' - skip the trade
+        'halt' - stop the trade
+        """
         if policy not in self.insufficient_resources_policy_values:
             raise ValueError(f"Invalid policy: {policy}. Must be one of {self.insufficient_resources_policy_values}")
         self.insufficient_resources_policy = policy
 
     def load_data(self, data):
-        """Load the historic trade data. Must include OHLC and volume information."""
+        """Load the historic trade data. The dataframe must include OHLC and volume information as well as a date column."""
         if not isinstance(data, pd.DataFrame):
             raise TypeError("Data must be a Pandas DataFrame")
 
@@ -109,18 +124,19 @@ class TradeKitBot:
         self.data = data.copy()
 
     def get_last_observed_exit_date(self):
-        """Return the last observed exit date"""
+        """Return the last observed exit date."""
         return self.db.get_last_observed_exit_date()
 
     def load_position(self):
-        """Load the latest open position from the database"""
+        """Load the latest open position for the ticker symbol from the database."""
         self.position = self.db.get_last_position(self.name, self.ticker)
 
     def get_position(self):
-        """Return the current trade position."""
+        """Return the current trade position for the ticker symbol"""
         return self.position
 
     def get_latest_open_position(self):
+        """Return the latest open position for the ticker symbol from the database."""
         return self.db.get_latest_open_position(self.name, self.ticker)
 
     def run(self, strategy: Optional[Callable[['TradeKitBot'], None]] = None):
@@ -166,6 +182,7 @@ class TradeKitBot:
         return self.enforce_quantity_policy(quantity, trade_type="sell")
 
     def buy(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
+        """Place a buy order."""
         return self.place_order(   
             action="BUY",
             position_type=position_type,
@@ -176,6 +193,7 @@ class TradeKitBot:
         )
 
     def sell(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
+        """Place a sell order."""
         return self.place_order(
             action="SELL",
             position_type=position_type,
@@ -186,7 +204,7 @@ class TradeKitBot:
         )
 
     def place_order(self, action: Literal["BUY","SELL"], position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
-        """Place a buy or sell order."""
+        """Place a buy or sell order. It's not recommended to call this method directly."""
         if price <= 0:
             raise ValueError("Price must be greater than 0")
 
@@ -220,7 +238,7 @@ class TradeKitBot:
             raise RuntimeError(f"Error placing {action} order: {e}")
 
     def submit_order(self, position_type: str, price: float)->int:
-        #Based on the position and order types, either update the database or create a new entry
+        """ Based on the position and order types, either update the database or create a new entry"""
         action = self.position.action
         position_type = self.position.position_type
 
