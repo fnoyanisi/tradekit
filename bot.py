@@ -107,7 +107,7 @@ class TradeKitBot:
         self.insufficient_resources_policy = policy
 
     def load_data(self, data):
-        """Load the historic trade data. The dataframe must include OHLC and volume information as well as a date column."""
+        """Load the historic trade data. The dataframe must include OHLC and volume information as well as an index of type datetime."""
         if not isinstance(data, pd.DataFrame):
             raise TypeError("Data must be a Pandas DataFrame")
 
@@ -151,6 +151,7 @@ class TradeKitBot:
             self.strategy(self)
 
     def enforce_quantity_policy(self, quantity: int, trade_type: str) -> int:
+        """It's not recommended to call this method directly. It is used internally to enforce the quantity policy."""
         if quantity > 0:
             return quantity
 
@@ -182,7 +183,7 @@ class TradeKitBot:
         return self.enforce_quantity_policy(quantity, trade_type="sell")
 
     def buy(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
-        """Place a buy order."""
+        """Place a buy order. Returns the number of assets bought or None if no assets were bought."""
         return self.place_order(   
             action="BUY",
             position_type=position_type,
@@ -193,7 +194,7 @@ class TradeKitBot:
         )
 
     def sell(self, position_type: Literal["LONG","SHORT"], price: float, observed_date: Optional[str] = None, stop_loss: Optional[float] = None, take_profit: Optional[float] = None):
-        """Place a sell order."""
+        """Place a sell order. Returns the number of assets sold or None if no assets were sold."""
         return self.place_order(
             action="SELL",
             position_type=position_type,
