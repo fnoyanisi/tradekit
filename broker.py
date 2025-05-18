@@ -3,14 +3,28 @@ import pandas as pd
 from typing import Optional
 from .models import TradeKitPosition
 from .database import TradeKitDB
+import logging
 
 class TradeKitBroker:
     def __init__(self, db: TradeKitDB):
+        """
+        Initialize the TradeKitBroker with a database connection.
+        :param db: An instance of TradeKitDB to interact with the database.
+        When setting the commission, it should be a percentage (e.g., 0.01 for 1%).
+        """
         self.db = db
         self.active_position = None
         self.cash = 0.0
         self.asset_holdings = 0
         self.commission = 0.0
+        # set-up the logger
+        self.logger = logging.getLogger(__name__)
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+        self.logger.propagate = False
 
     def statement(self):
         return {
@@ -42,6 +56,7 @@ class TradeKitBroker:
             self._submit_order_to_broker()
             self._finalize_order_execution()
         except Exception as e:
+            self.logger.error(f"Error executing order for position id: {self.active_position.id}. Error: {e}")
             raise RuntimeError(f"Error executing order for position id: {self.active_position.id}. Error: {e}")
         return self.active_position.quantity
 

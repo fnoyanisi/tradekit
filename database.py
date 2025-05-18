@@ -41,9 +41,10 @@ class TradeKitDB:
                 password=self.password,
                 host=self.host,
                 port=self.port,
-                row_factory=dict_row  # Fetch results as dictionaries
+                row_factory=dict_row  # fetch results as dictionaries
             )
         except psycopg.Error as e:
+            self.conn = None  # ensure conn is unset or cleared on failure
             self.logger.debug(f"Error connecting to database: {e}")
             raise
         self.logger.debug(f"Database connection established.")
