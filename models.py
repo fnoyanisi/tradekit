@@ -6,6 +6,7 @@ class TradeKitPosition:
     VALID_ACTIONS = ["BUY", "SELL"]
     VALID_STATUSES = ["PENDING", "OPEN", "PARTIAL", "CLOSED", "CANCELED", "FAILED"]
     VALID_ORDER_TYPES = ["LIMIT", "MARKET"]
+    VALID_EXIT_REASONS = ['TECHNICAL', 'STOP_LOSS', 'TAKE_PROFIT', 'MANUAL', 'TIMEOUT', 'SIGNAL', 'OTHER']
 
     def __init__(
         self, 
@@ -25,6 +26,7 @@ class TradeKitPosition:
         exit_date: Optional[datetime] = None, 
         exit_price: Optional[float] = None,
         exit_reason: Optional[str] = None,
+        trigger: Optional[str] = None,
         stop_loss: Optional[float] = None,
         take_profit: Optional[float] = None,
         id: Optional[int] = None, 
@@ -49,6 +51,7 @@ class TradeKitPosition:
             exit_date (datetime, optional): Date when the trade was closed.
             exit_price (float, optional): Price at which the trade was closed.
             exit_reason (str, optional): Reason for exiting the trade.
+            trigger (str, optional): Trigger condition for the trade.
             stop_loss (float, optional): Stop loss price for risk management.
             take_profit (float, optional): Take profit price for risk management.
             id (int, optional): Unique identifier for the trade. Defaults to None.
@@ -99,9 +102,12 @@ class TradeKitPosition:
         if exit_price and exit_price <= 0:
             raise ValueError(f"Invalid exit_price: {exit_price}. Must be greater than 0")
         self.exit_price = exit_price
-        if exit_reason and not (1 <= len(exit_reason) <= 50):  
-            raise ValueError("Exit reason must be between 1 and 50 characters")
+        if exit_reason and exit_reason not in self.VALID_EXIT_REASONS:  
+            raise ValueError(f"Invalied exit_reason: {exit_reason}. Must be one of {self.VALID_EXIT_REASONS}")
         self.exit_reason = exit_reason or None
+        if trigger and not (1 <= len(trigger) <= 50):
+            raise ValueError("Trigger must be between 1 and 50 characters")
+        self.trigger = trigger or None
 
         # order type & status
         if order_type not in self.VALID_ORDER_TYPES:
